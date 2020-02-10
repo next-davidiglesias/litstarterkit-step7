@@ -1,4 +1,6 @@
 import { html, render } from 'lit-html';
+import "@webcomponents/webcomponentsjs/webcomponents-bundle";
+import '@webcomponents/webcomponentsjs/custom-elements-es5-adapter.js';
 
 class PasswordChecker extends HTMLElement {
   constructor() {
