@@ -1,24 +1,36 @@
-import {until} from 'lit-html/directives/until.js';
-import { render, html } from "lit-html";
+import { html, render } from 'lit-html';
 
-let promise = new Promise((resolve, reject) => {
-    setTimeout(() => resolve("done!"), 5000)
-  });
+class PasswordChecker extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({mode: 'open'});
+    this.password = this.getAttribute('password');
+  }
 
-const content = (async () => {
-  const res = await fetch('https://api.github.com/orgs/nodejs');
-  const json = await res.json();
-  const wait = await promise;
-  return html`<h1>${json.name}</h1>`
-})();
+  get password() { return this._password; }
 
-const mytemplate = html`${until(content, html`
-  <div class="content">
-    <div class="lds-circle">
-      <div></div>
-    </div>
-  <span>loading...</span>
-  </div>
-`)}`
+  set password(value) {
+    this._password = value;
+    this.setAttribute('password', value);
+    this.update();
+  }
 
-render(mytemplate, document.body.querySelector('section'))
+  update() {
+    render(this.template(), this.shadowRoot, {eventContext: this});
+  }
+
+  isValid(passwd) {
+    const re = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{4,}/;
+    return re.test(passwd);
+  }
+
+  template() {
+    return html`
+      <span>Your password is <strong>${this.isValid(this.password) ? 'valid 👍' : 'INVALID 👎'}</strong></span>
+      ${this.isValid(this.password) ?
+        html`<div>Strength: <progress value=${this.password.length-3} max="5"</progress></div>` : ``}`;
+
+  }
+}
+
+customElements.define('password-checker', PasswordChecker);
